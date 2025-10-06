@@ -10,11 +10,18 @@ import mongoose from "mongoose";
 // Create categories from payload
 export const createBlog = async (req , res ) => {
   try {
-    const { name, description, author, moduleId } = req.body;
-    const tags = req.body.tags ? JSON.parse(req.body.tags) : [];
+    const { name, description, author, moduleId ,pdfFile , thumbnail } = req.body;
+    console.log('moduleId: ', moduleId);
+    console.log('author: ', author);
+    console.log('description: ', description);
+    console.log('name: ', name);
+    const tags = req.body.tags ? req.body.tags : [];
+    console.log('tags: ', tags);
 
-    const pdfFile = (req.files as any)?.pdfFile?.[0];
-    const thumbnail = (req.files as any)?.thumbnail?.[0];
+    // const pdfFile = (req.files as any)?.pdfFile?.[0];
+    // console.log('pdfFile: ', pdfFile);
+    // const thumbnail = (req.files as any)?.thumbnail?.[0];
+    // console.log('thumbnail: ', thumbnail);
 
     // ✅ Validation
     if (!pdfFile || !thumbnail) {
@@ -28,8 +35,8 @@ export const createBlog = async (req , res ) => {
       author,
       moduleId,
       tags,
-      pdfPath: pdfFile.path,
-      thumbnailPath: thumbnail.path,
+      pdfPath: pdfFile,
+      thumbnailPath: thumbnail,
     });
 
     await blog.save();

@@ -20,16 +20,17 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
-router.post(
-  '/create',
-  upload.fields([
-    { name: 'pdfFile', maxCount: 1 },
-    { name: 'thumbnail', maxCount: 1 },
-  ]),
-  controller.createBlog
-);
+// router.post(
+//   '/create',
+//   upload.fields([
+//     { name: 'pdfFile', maxCount: 1 },
+//     { name: 'thumbnail', maxCount: 1 },
+//   ]),
+//   controller.createBlog
+// );
 
   router.get('/get', controller.getBlogs);
+  router.post('/create', controller.createBlog);
 
 
 export = router
