@@ -12,6 +12,10 @@ export interface IBlog extends Document {
   thumbnailPath: string;
   createdAt: Date;
   updatedAt: Date;
+    moduleDetail: {
+    id: string;          // or ObjectId if you're using MongoDB
+    name: string;
+  };
 }
 
 // Optional if you want static methods later

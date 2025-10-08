@@ -38,6 +38,16 @@ const BlogSchema: Schema = new Schema(
       type: String,
       required: true,
     },
+      moduleDetail: {
+      id: {
+        type: String, 
+        required: false,
+      },
+      name: {
+        type: String,
+        required: false,
+      },
+    },
   },
   {
     timestamps: true, // automatically adds createdAt and updatedAt

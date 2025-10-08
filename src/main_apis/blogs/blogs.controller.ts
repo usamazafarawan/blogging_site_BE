@@ -8,9 +8,9 @@ import mongoose from "mongoose";
 
 
 // Create categories from payload
-export const createBlog = async (req , res ) => {
+export const createBlog = async (req, res) => {
   try {
-    const { name, description, author, moduleId ,pdfFile , thumbnail } = req.body;
+    const { name, description, author, moduleId, pdfFile, thumbnail, moduleDetail } = req.body;
     console.log('moduleId: ', moduleId);
     console.log('author: ', author);
     console.log('description: ', description);
@@ -37,6 +37,7 @@ export const createBlog = async (req , res ) => {
       tags,
       pdfPath: pdfFile,
       thumbnailPath: thumbnail,
+      moduleDetail
     });
 
     await blog.save();
@@ -52,10 +53,11 @@ export const createBlog = async (req , res ) => {
 };
 
 // Get all categories
-export const getBlogs = async function (req,res)  {
+export const getBlogs = async function (req, res) {
   try {
     const blogs = await Blogs.find()
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .allowDiskUse(true);
 
     res.status(200).json({
       message: 'Blogs fetched successfully',
@@ -66,5 +68,26 @@ export const getBlogs = async function (req,res)  {
     res.status(500).json({ message: 'Server error', error: err });
   }
 };
+
+// Get all categories
+export const getBlogsByCategory = async function (req, res) {
+  try {
+    const categoryId = req.params.id; // <-- get ID from route
+    console.log('categoryId: ', categoryId);
+    const blogs = await Blogs.find({ "moduleDetail.id": categoryId })
+      .sort({ createdAt: -1 })
+      .select("name description author createdAt thumbnailPath _id") // ✅ only these fields
+      .allowDiskUse(true);
+
+    res.status(200).json({
+      message: 'Blogs fetched successfully',
+      data: blogs,
+    });
+  } catch (err) {
+    console.error('Error fetching blogs:', err);
+    res.status(500).json({ message: 'Server error', error: err });
+  }
+};
+
 
 
