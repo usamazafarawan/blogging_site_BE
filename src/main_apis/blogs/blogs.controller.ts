@@ -90,4 +90,24 @@ export const getBlogsByCategory = async function (req, res) {
 };
 
 
+export const getBlogById = async function (req, res) {
+  try {
+    const blogId = req.params.id; // <-- get ID from route
+    console.log('blogId: ', blogId);
+    const blogs = await Blogs.findById(blogId)
+      .sort({ createdAt: -1 })
+      .allowDiskUse(true);
+
+    res.status(200).json({
+      message: 'Blog Detail fetched successfully',
+      data: blogs,
+    });
+  } catch (err) {
+    console.error('Error fetching blog:', err);
+    res.status(500).json({ message: 'Server error', error: err });
+  }
+};
+
+
+
 

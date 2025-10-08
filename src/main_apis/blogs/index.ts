@@ -31,6 +31,7 @@ const upload = multer({ storage });
 
   router.get('/get', controller.getBlogs);
   router.get('/category/:id', controller.getBlogsByCategory);
+    router.get('/blog/:id', controller.getBlogById);
   router.post('/create', controller.createBlog);
 
 
