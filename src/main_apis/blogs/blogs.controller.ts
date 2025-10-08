@@ -76,7 +76,7 @@ export const getBlogsByCategory = async function (req, res) {
     console.log('categoryId: ', categoryId);
     const blogs = await Blogs.find({ "moduleDetail.id": categoryId })
       .sort({ createdAt: -1 })
-      .select("name description author createdAt thumbnailPath _id") // ✅ only these fields
+      .select("name description author createdAt moduleDetail thumbnailPath _id") // ✅ only these fields
       .allowDiskUse(true);
 
     res.status(200).json({
