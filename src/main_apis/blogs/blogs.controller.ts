@@ -92,10 +92,12 @@ export const getBlogsByCategory = async function (req, res) {
 
 export const getBlogById = async function (req, res) {
   try {
-    const blogId = req.params.id; // <-- get ID from route
-    console.log('blogId: ', blogId);
+    const blogId = req.params.id; 
+    const isEdit = req.query.isEdit; 
+    const fieldsToSelect = isEdit ? 'author description moduleDetail name tags _id': '';
     const blogs = await Blogs.findById(blogId)
       .sort({ createdAt: -1 })
+      .select(fieldsToSelect) 
       .allowDiskUse(true);
 
     res.status(200).json({
@@ -125,6 +127,42 @@ export const deleteBlogById = async function (req, res) {
 
   } catch (err) {
     console.error('Error fetching blog:', err);
+    res.status(500).json({ message: 'Server error', error: err });
+  }
+};
+
+export const updateBlogById = async (req, res) => {
+  try {
+    const blogId = req.params.id;
+    const { name, description, author, moduleId, pdfFile, thumbnail, moduleDetail, tags = [] } = req.body;
+
+    // ✅ Find existing blog
+    const existingBlog = await Blogs.findById(blogId);
+    if (!existingBlog) {
+      return res.status(404).json({ message: 'Blog not found' });
+    }
+
+    // ✅ Update only provided fields
+    if (name) existingBlog.name = name;
+    if (description) existingBlog.description = description;
+    if (author) existingBlog.author = author;
+    if (moduleId) existingBlog.moduleId = moduleId;
+    if (tags.length) existingBlog.tags = tags;
+    if (moduleDetail) existingBlog.moduleDetail = moduleDetail;
+
+    // ✅ Update files only if new ones provided
+    if (pdfFile) existingBlog.pdfPath = pdfFile;
+    if (thumbnail) existingBlog.thumbnailPath = thumbnail;
+
+    // ✅ Save changes
+    await existingBlog.save();
+
+    res.status(200).json({
+      message: 'Blog updated successfully!',
+      data: existingBlog,
+    });
+  } catch (err) {
+    console.error('Error updating blog:', err);
     res.status(500).json({ message: 'Server error', error: err });
   }
 };

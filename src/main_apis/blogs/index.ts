@@ -33,6 +33,7 @@ const upload = multer({ storage });
   router.get('/category/:id', controller.getBlogsByCategory);
   router.get('/blog/:id', controller.getBlogById);
   router.post('/create', controller.createBlog);
+  router.put('/update/:id', controller.updateBlogById);
   router.delete('/delete/:id', controller.deleteBlogById);
 
 
