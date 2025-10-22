@@ -93,7 +93,7 @@ export const getBlogsByCategory = async function (req, res) {
 export const getBlogById = async function (req, res) {
   try {
     const blogId = req.params.id; 
-    const isEdit = req.query.isEdit; 
+    const isEdit = req.query.isEdit === 'true';
     const fieldsToSelect = isEdit ? 'author description moduleDetail name tags _id': '';
     const blogs = await Blogs.findById(blogId)
       .sort({ createdAt: -1 })
