@@ -19,16 +19,12 @@ const server = http.createServer(app);
  app.use(bodyParser.urlencoded({ limit: "200mb", extended: true }));
 
 
-// ✅ CORS — allow your frontend domains
-app.use(cors({
-  origin: [
-    "https://blogging-site-fe.vercel.app",  // ✅ your frontend domain
-    "http://localhost:4200",                // ✅ local Angular dev
-  ],
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
-  credentials: true,
-}));
+app.use(cors(
+{
+origin:"*"
+}
+));
+
 
 
 
@@ -86,10 +82,10 @@ export { gfsBucket };
 
  const environment = {
     // local backend URL
-     apiUrl:  'http://localhost:3000'
+   //  apiUrl:  'http://localhost:3000'
 
       // Live backend URL
-  // apiUrl:  'https://blogging-site-be.vercel.app'
+   apiUrl:  'https://blogging-site-be.vercel.app'
 };
 
 
