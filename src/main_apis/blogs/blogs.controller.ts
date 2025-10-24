@@ -45,11 +45,11 @@ export const createBlog = async (req, res) => {
     });
 
     if (pdfFileId) {
-      blog.pdfUrl = `${environment.apiUrl}/blogs/pdf/${blog._id}`;
+      blog.pdfUrl = `${environment.apiUrl}/api/blogs/pdf/${blog._id}`;
     }
 
     if (thumbnailFileId) {
-      blog.thumbnailUrl = `${environment.apiUrl}/blogs/img/${blog._id}`;
+      blog.thumbnailUrl = `${environment.apiUrl}/api/blogs/img/${blog._id}`;
     }
 
     await blog.save();
@@ -178,7 +178,7 @@ export const updateBlogById = async (req, res) => {
       if (pdfFileId) {
         await gfsBucket.delete(new mongoose.Types.ObjectId(existingBlog.pdfFileId)); // remove old file
         existingBlog.pdfFileId = pdfFileId;
-        existingBlog.pdfUrl = `${environment.apiUrl}/blogs/pdf/${blogId}`;
+        existingBlog.pdfUrl = `${environment.apiUrl}/api/blogs/pdf/${blogId}`;
       }
     }
 
@@ -187,7 +187,7 @@ export const updateBlogById = async (req, res) => {
       if (thumbnailFileId) {
         await gfsBucket.delete(new mongoose.Types.ObjectId(existingBlog.thumbnailFileId)); // remove old file
         existingBlog.thumbnailFileId = thumbnailFileId;
-        existingBlog.thumbnailUrl = `${environment.apiUrl}/blogs/img/${blogId}`;
+        existingBlog.thumbnailUrl = `${environment.apiUrl}/api/blogs/img/${blogId}`;
       }
     }
 
