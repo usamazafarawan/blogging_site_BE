@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document, Model, model } from "mongoose";
+import mongoose, { Schema, Document, Model, model,Types  } from "mongoose";
 
 
 
@@ -6,16 +6,18 @@ export interface IBlog extends Document {
   name: string;
   description: string;
   author: string;
-  moduleId: string; 
+  moduleId: string;
   tags: string[];
-  pdfPath: string;
-  thumbnailPath: string;
   createdAt: Date;
   updatedAt: Date;
-    moduleDetail: {
+  moduleDetail: {
     id: string;          // or ObjectId if you're using MongoDB
     name: string;
   };
+  pdfFileId?: Types.ObjectId;         // Reference to fs.files
+  pdfUrl?: string;  // URL to access the PDF file
+  thumbnailFileId?: Types.ObjectId;         // Reference to fs.files
+  thumbnailUrl?: string;  // URL to access the thumbnail image
 }
 
 // Optional if you want static methods later

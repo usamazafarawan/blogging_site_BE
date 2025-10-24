@@ -1,5 +1,6 @@
 import { Schema, model } from 'mongoose';
 import { IBlog, IBlogModel } from './blogs.interface';
+import mongoose from "mongoose";
 
 
 /**
@@ -30,13 +31,13 @@ const BlogSchema: Schema = new Schema(
         trim: true,
       },
     ],
-    pdfPath: {
+    pdfFileId: { type: mongoose.Schema.Types.ObjectId, ref: 'fs.files' },
+    pdfUrl: {
       type: String,
-      required: true,
     },
-    thumbnailPath: {
+    thumbnailFileId: { type: mongoose.Schema.Types.ObjectId, ref: 'fs.files' },
+    thumbnailUrl: {
       type: String,
-      required: true,
     },
       moduleDetail: {
       id: {

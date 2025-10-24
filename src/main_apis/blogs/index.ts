@@ -30,6 +30,8 @@ const upload = multer({ storage });
 // );
 
   router.get('/get', controller.getBlogs);
+  router.get('/pdf/:id', controller.getPdfByBlogId);
+  router.get('/img/:id', controller.getImageByBlogId);
   router.get('/category/:id', controller.getBlogsByCategory);
   router.get('/blog/:id', controller.getBlogById);
   router.post('/create', controller.createBlog);

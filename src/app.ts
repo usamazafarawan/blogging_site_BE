@@ -3,6 +3,7 @@ import express from "express";
 import mongoose from "mongoose";
 import http from "http";
 import { routes } from "./route";
+import { GridFSBucket } from "mongodb";
 const path = require('path');
 const fs = require("fs");
 const multer = require("multer");
@@ -80,5 +81,29 @@ mongoose.connect(url)
 server.listen(port, () => {
 console.log(`Express server listening ${port}`);
 });
+
+
+
+let gfsBucket;
+mongoose.connection.once("open", () => {
+  gfsBucket = new GridFSBucket(mongoose.connection.db, {
+    bucketName: "pdfs",
+  });
+  console.log("✅ GridFSBucket initialized");
+});
+
+export { gfsBucket };
+
+
+ const environment = {
+    // local backend URL
+   //  apiUrl:  'http://localhost:3000/api'
+
+      // Live backend URL
+    apiUrl:  'https://blogging-site-be.vercel.app/api'
+};
+
+
+export { environment };
 
 export default app;
