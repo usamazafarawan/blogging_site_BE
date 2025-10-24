@@ -6,6 +6,8 @@ import { Blogs } from './blogs.model';
 import mongoose from "mongoose";
 import { Readable } from "stream";
 import { gfsBucket } from "../../app";
+import { environment } from "../../app";
+
 
 
 
@@ -43,11 +45,11 @@ export const createBlog = async (req, res) => {
     });
 
     if (pdfFileId) {
-      blog.pdfUrl = `${process.env.API_URL || "http://localhost:3000"}/api/blogs/pdf/${blog._id}`;
+      blog.pdfUrl = `${environment.apiUrl}/api/blogs/pdf/${blog._id}`;
     }
 
     if (thumbnailFileId) {
-      blog.thumbnailUrl = `${process.env.API_URL || "http://localhost:3000"}/api/blogs/img/${blog._id}`;
+      blog.thumbnailUrl = `${environment.apiUrl}/api/blogs/img/${blog._id}`;
     }
 
     await blog.save();
@@ -166,9 +168,28 @@ export const updateBlogById = async (req, res) => {
     if (tags.length) existingBlog.tags = tags;
     if (moduleDetail) existingBlog.moduleDetail = moduleDetail;
 
-    // ✅ Update files only if new ones provided
-    // if (pdfFile) existingBlog.pdfPath = pdfFile;
-    // if (thumbnail) existingBlog.thumbnailPath = thumbnail;
+
+
+    let pdfFileId = null;
+    let thumbnailFileId = null;
+
+    if (pdfFile) {
+      pdfFileId = await uploadToGridFS(pdfFile, `${Date.now()}_file.pdf`, "application/pdf");
+      if (pdfFileId) {
+        await gfsBucket.delete(new mongoose.Types.ObjectId(existingBlog.pdfFileId)); // remove old file
+        existingBlog.pdfFileId = pdfFileId;
+        existingBlog.pdfUrl = `${environment.apiUrl}/api/blogs/pdf/${blogId}`;
+      }
+    }
+
+    if (thumbnail) {
+      thumbnailFileId = await uploadToGridFS(thumbnail, `${Date.now()}_image.png`, "image/png");
+      if (thumbnailFileId) {
+        await gfsBucket.delete(new mongoose.Types.ObjectId(existingBlog.thumbnailFileId)); // remove old file
+        existingBlog.thumbnailFileId = thumbnailFileId;
+        existingBlog.thumbnailUrl = `${environment.apiUrl}/api/blogs/img/${blogId}`;
+      }
+    }
 
     // ✅ Save changes
     await existingBlog.save();
