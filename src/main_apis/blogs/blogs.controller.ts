@@ -14,53 +14,67 @@ import { environment } from "../../app";
 // Create categories from payload
 export const createBlog = async (req, res) => {
   try {
-    const { name, description, author, moduleId, pdfFile, thumbnail, moduleDetail } = req.body;
-    const tags = req.body.tags ? req.body.tags : [];
+    const { name, description, author, moduleId, tags, moduleDetail } = req.body;
 
-    if (!pdfFile || !thumbnail) {
-      return res.status(400).json({ message: 'Missing PDF or thumbnail file' });
-    }
+    // Parse JSON fields (since FormData sends everything as strings)
+    const parsedTags = tags ? JSON.parse(tags) : [];
+    const parsedModuleDetail = moduleDetail ? JSON.parse(moduleDetail) : {};
 
-    let pdfFileId = null;
-    let thumbnailFileId = null;
+   let pdfFileId = null;
+let thumbnailFileId = null;
 
-    if (pdfFile) {
-      pdfFileId = await uploadToGridFS(pdfFile, `${Date.now()}_file.pdf`, "application/pdf");
-    }
+// ✅ Handle PDF upload (if provided)
+if (req.files?.pdfFile?.[0]) {
+  const pdfFile = req.files.pdfFile[0];
+  pdfFileId = await uploadToGridFS(
+    pdfFile.buffer,
+    `${Date.now()}_${pdfFile.originalname}`,
+    pdfFile.mimetype || "application/pdf"
+  );
+}
 
-    if (thumbnail) {
-      thumbnailFileId = await uploadToGridFS(thumbnail, `${Date.now()}_image.png`, "image/png");
-    }
+// ✅ Handle Thumbnail upload (if provided)
+if (req.files?.thumbnail?.[0]) {
+  const thumbFile = req.files.thumbnail[0];
+  thumbnailFileId = await uploadToGridFS(
+    thumbFile.buffer,
+    `${Date.now()}_${thumbFile.originalname}`,
+    thumbFile.mimetype || "image/png"
+  );
+}
 
-    // ✅ Create and save to MongoDB
+    // ✅ Create blog entry in MongoDB
     const blog = new Blogs({
       name,
       description,
       author,
       moduleId,
-      tags,
-      moduleDetail,
+      tags: parsedTags,
+      moduleDetail: parsedModuleDetail,
       pdfFileId,
       thumbnailFileId,
     });
 
+    await blog.save();
+
+    // ✅ Generate file URLs
     if (pdfFileId) {
       blog.pdfUrl = `${environment.apiUrl}/api/blogs/pdf/${blog._id}`;
     }
-
     if (thumbnailFileId) {
       blog.thumbnailUrl = `${environment.apiUrl}/api/blogs/img/${blog._id}`;
     }
 
+    // ✅ Save again with URLs
     await blog.save();
 
     res.status(201).json({
-      message: 'Blog created successfully!',
+      message: "✅ Blog created successfully!",
       data: blog,
     });
   } catch (err) {
-    console.error('Error creating blog:', err);
-    res.status(500).json({ message: 'Server error', error: err });
+    console.error("❌ Error creating blog:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -152,29 +166,37 @@ export const deleteBlogById = async function (req, res) {
 export const updateBlogById = async (req, res) => {
   try {
     const blogId = req.params.id;
-    const { name, description, author, moduleId, pdfFile, thumbnail, moduleDetail, tags = [] } = req.body;
+    const { name, description, author, moduleId, tags, moduleDetail } = req.body;
 
-    // ✅ Find existing blog
+    const parsedTags = tags ? JSON.parse(tags) : [];
+    const parsedModuleDetail = moduleDetail ? JSON.parse(moduleDetail) : {};
+
+    // ✅ Find the existing blog
     const existingBlog = await Blogs.findById(blogId);
     if (!existingBlog) {
-      return res.status(404).json({ message: 'Blog not found' });
+      return res.status(404).json({ message: "❌ Blog not found" });
     }
 
-    // ✅ Update only provided fields
+    // ✅ Update basic fields if provided
     if (name) existingBlog.name = name;
     if (description) existingBlog.description = description;
     if (author) existingBlog.author = author;
     if (moduleId) existingBlog.moduleId = moduleId;
-    if (tags.length) existingBlog.tags = tags;
-    if (moduleDetail) existingBlog.moduleDetail = moduleDetail;
-
-
+    if (parsedTags.length) existingBlog.tags = parsedTags;
+    if (parsedModuleDetail) existingBlog.moduleDetail = parsedModuleDetail;
 
     let pdfFileId = null;
     let thumbnailFileId = null;
 
-    if (pdfFile) {
-      pdfFileId = await uploadToGridFS(pdfFile, `${Date.now()}_file.pdf`, "application/pdf");
+    // ✅ Handle PDF upload (if provided)
+    if (req.files?.pdfFile?.[0]) {
+      const pdfFile = req.files.pdfFile[0];
+      pdfFileId = await uploadToGridFS(
+        pdfFile.buffer,
+        `${Date.now()}_${pdfFile.originalname}`,
+        pdfFile.mimetype || "application/pdf"
+      );
+
       if (pdfFileId) {
         await gfsBucket.delete(new mongoose.Types.ObjectId(existingBlog.pdfFileId)); // remove old file
         existingBlog.pdfFileId = pdfFileId;
@@ -182,10 +204,17 @@ export const updateBlogById = async (req, res) => {
       }
     }
 
-    if (thumbnail) {
-      thumbnailFileId = await uploadToGridFS(thumbnail, `${Date.now()}_image.png`, "image/png");
+    // ✅ Handle Thumbnail upload (if provided)
+    if (req.files?.thumbnail?.[0]) {
+      const thumbFile = req.files.thumbnail[0];
+      thumbnailFileId = await uploadToGridFS(
+        thumbFile.buffer,
+        `${Date.now()}_${thumbFile.originalname}`,
+        thumbFile.mimetype || "image/png"
+      );
+
       if (thumbnailFileId) {
-        await gfsBucket.delete(new mongoose.Types.ObjectId(existingBlog.thumbnailFileId)); // remove old file
+        await gfsBucket.delete(new mongoose.Types.ObjectId(existingBlog.thumbnailFileId));
         existingBlog.thumbnailFileId = thumbnailFileId;
         existingBlog.thumbnailUrl = `${environment.apiUrl}/api/blogs/img/${blogId}`;
       }
@@ -195,12 +224,12 @@ export const updateBlogById = async (req, res) => {
     await existingBlog.save();
 
     res.status(200).json({
-      message: 'Blog updated successfully!',
+      message: "✅ Blog updated successfully!",
       data: existingBlog,
     });
   } catch (err) {
-    console.error('Error updating blog:', err);
-    res.status(500).json({ message: 'Server error', error: err });
+    console.error("❌ Error updating blog:", err);
+    res.status(500).json({ message: "Server error", error: err.message });
   }
 };
 
@@ -297,25 +326,25 @@ export const getImageByBlogId = async (req, res) => {
 };
 
 
-  // Helper to write base64 -> GridFS and return fileId
-const uploadToGridFS = (base64Data, filename, contentType) => {
-  return new Promise((resolve, reject) => {
+/**
+ * Uploads a file buffer to MongoDB GridFS and returns the fileId.
+ * @param {Buffer} buffer - The file buffer (e.g. req.file.buffer)
+ * @param {string} filename - The filename to store in GridFS
+ * @param {string} contentType - The MIME type (e.g. 'application/pdf' or 'image/png')
+ * @returns {Promise<ObjectId>} The uploaded file's ObjectId
+ */
+export const uploadToGridFS = (buffer, filename, contentType) => {
+  return new Promise<void | mongoose.Types.ObjectId>((resolve, reject) => {
     try {
-      // Remove base64 prefix if present
-      const base64Clean = base64Data.replace(/^data:.*;base64,/, "");
+      // ✅ Create a readable stream from the file buffer
+      const readStream = Readable.from(buffer);
 
-      // Convert to binary
-      const buffer = Buffer.from(base64Clean, "base64");
-
-      // Create stream
-      const readStream = new Readable();
-      readStream.push(buffer);
-      readStream.push(null);
-
-      // Upload to GridFS
+      // ✅ Open a GridFS upload stream
       const uploadStream = gfsBucket.openUploadStream(filename, { contentType });
 
-      readStream.pipe(uploadStream)
+      // ✅ Pipe the buffer into GridFS
+      readStream
+        .pipe(uploadStream)
         .on("finish", () => {
           console.log(`✅ File uploaded (${contentType}):`, uploadStream.id);
           resolve(uploadStream.id);
@@ -324,12 +353,12 @@ const uploadToGridFS = (base64Data, filename, contentType) => {
           console.error("❌ Error uploading to GridFS:", err);
           reject(err);
         });
+
     } catch (err) {
       reject(err);
     }
   });
 };
-
 
 
 

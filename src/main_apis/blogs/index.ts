@@ -19,7 +19,7 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage: multer.memoryStorage() });
 // router.post(
 //   '/create',
 //   upload.fields([
@@ -29,14 +29,20 @@ const upload = multer({ storage });
 //   controller.createBlog
 // );
 
-  router.get('/get', controller.getBlogs);
-  router.get('/pdf/:id', controller.getPdfByBlogId);
-  router.get('/img/:id', controller.getImageByBlogId);
-  router.get('/category/:id', controller.getBlogsByCategory);
-  router.get('/blog/:id', controller.getBlogById);
-  router.post('/create', controller.createBlog);
-  router.put('/update/:id', controller.updateBlogById);
-  router.delete('/delete/:id', controller.deleteBlogById);
+router.get('/get', controller.getBlogs);
+router.get('/pdf/:id', controller.getPdfByBlogId);
+router.get('/img/:id', controller.getImageByBlogId);
+router.get('/category/:id', controller.getBlogsByCategory);
+router.get('/blog/:id', controller.getBlogById);
+router.post('/create', upload.fields([
+  { name: 'pdfFile', maxCount: 1 },
+  { name: 'thumbnail', maxCount: 1 }
+]), controller.createBlog);
+router.put('/update/:id', upload.fields([
+  { name: 'pdfFile', maxCount: 1 },
+  { name: 'thumbnail', maxCount: 1 }
+]), controller.updateBlogById);
+router.delete('/delete/:id', controller.deleteBlogById);
 
 
 
