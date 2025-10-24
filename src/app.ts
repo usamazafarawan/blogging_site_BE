@@ -19,31 +19,19 @@ const server = http.createServer(app);
  app.use(bodyParser.urlencoded({ limit: "200mb", extended: true }));
 
 
-app.use(cors(
-{
-origin:"*"
-}
-));
+// ✅ CORS — allow your frontend domains
+app.use(cors({
+  origin: [
+    "https://blogging-site-fe.vercel.app",  // ✅ your frontend domain
+    "http://localhost:4200",                // ✅ local Angular dev
+  ],
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"],
+  credentials: true,
+}));
 
 
-// SET STORAGE
-var storage = multer.diskStorage({
-   destination: function (req, file, cb) {
-     cb(null, 'uploads')
-   },
-   filename: function (req, file, cb) {
-     cb(null, file.name + '-' + Date.now())
-   }
- })
 
-var upload = multer({ storage: storage });
-// Multer configuration
-
-
-app.post("/uploadFeeStrucDoc",upload.single('uploadFeeStrucDoc'),(req,res)=>{
-   console.log('req: ', req.body);
- 
-})
 
 app.use((req, res, next) => {
     res.setHeader('Content-Type', 'application/json');
@@ -98,10 +86,10 @@ export { gfsBucket };
 
  const environment = {
     // local backend URL
-  //   apiUrl:  'http://localhost:3000'
+     apiUrl:  'http://localhost:3000'
 
       // Live backend URL
-   apiUrl:  'https://blogging-site-be.vercel.app'
+  // apiUrl:  'https://blogging-site-be.vercel.app'
 };
 
 
