@@ -34,6 +34,7 @@ router.get('/pdf/:id', controller.getPdfByBlogId);
 router.get('/img/:id', controller.getImageByBlogId);
 router.get('/category/:id', controller.getBlogsByCategory);
 router.get('/blog/:id', controller.getBlogById);
+router.get('/searchQuery', controller.getBlogsByQuery);
 router.post('/create', upload.fields([
   { name: 'pdfFile', maxCount: 1 },
   { name: 'thumbnail', maxCount: 1 }

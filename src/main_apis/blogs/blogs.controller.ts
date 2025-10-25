@@ -233,6 +233,35 @@ export const updateBlogById = async (req, res) => {
   }
 };
 
+export const getBlogsByQuery = async (req, res) => {
+  try {
+    const { query } = req.query; 
+    if (!query || query.trim() === '') {
+      return res.status(400).json({ message: "Query parameter is required" });
+    }
+
+    // Case-insensitive regex search in name, description, and tags
+    const regex = new RegExp(query, 'i');
+
+    const blogs = await Blogs.find({
+      $or: [
+        { name: { $regex: regex } },
+        { description: { $regex: regex } },
+        { tags: { $elemMatch: { $regex: regex } } },
+      ],
+    });
+
+     res.status(200).json({
+      message: 'Blogs  fetched successfully',
+      data: blogs,
+    });
+  } catch (error) {
+    console.error("Error searching blogs:", error);
+    res.status(500).json({ message: "Server error", error });
+  }
+};
+
+
 
 
 
