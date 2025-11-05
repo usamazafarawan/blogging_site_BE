@@ -45,6 +45,7 @@ export const TOKEN_KEY="11223344";
    app.use('/api/auth', require('./main_apis/signup'));
    app.use('/api/categories', require('./main_apis/categories'));
    app.use('/api/blogs', require('./main_apis/blogs'));
+   app.use('/api/subscription', require('./main_apis/subscription'));
 
 
 
