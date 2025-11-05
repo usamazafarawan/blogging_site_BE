@@ -98,15 +98,32 @@ export const getBlogs = async function (req, res) {
 // Get all categories
 export const getBlogsByCategory = async function (req, res) {
   try {
-    const categoryId = req.params.id; // <-- get ID from route
+    const categoryId = req.params.id;
     const blogs = await Blogs.find({ "moduleDetail.id": categoryId })
       .sort({ createdAt: -1 })
-      .select("name description author createdAt moduleDetail thumbnailUrl _id") // ✅ only these fields
+      .select("name description author createdAt moduleDetail thumbnailUrl _id tags")
       .allowDiskUse(true);
 
+    if (!blogs.length) {
+      return res.status(200).json({
+        message: "No blogs found for this category",
+        data: [],
+      });
+    }
+
+    const allTags = [...new Set(blogs.flatMap(blog => blog.tags || []))];
+
+    const relatedBlogs = await Blogs.find({
+      tags: { $in: allTags }, // match any tag
+      _id: { $nin: blogs.map(blog => blog._id) } // exclude main result blogs
+    })
+      .sort({ createdAt: -1 })
+      .select("name description author createdAt moduleDetail thumbnailUrl _id tags");
+
+    const allBlogs = blogs.concat(relatedBlogs);
     res.status(200).json({
       message: 'Blogs fetched successfully',
-      data: blogs,
+      data: allBlogs,
     });
   } catch (err) {
     console.error('Error fetching blogs:', err);
